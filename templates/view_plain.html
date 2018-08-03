@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <!-- Latest compiled and minified CSS -->
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.5/dist/loadingoverlay.min.js"></script>
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+</head>
+
+
+    <script>
+        DataArray = new Array();
+        var json;
+        var selectedHost;
+        var templateJson = {
+          vlan : "",
+          ip: "",
+          port1: "",
+          port2: ""
+        };
+        var currentConfig = 0;
+
+        var customConfigJson = templateJson;
+        var customEditedJson = templateJson;
+
+        function clearPage() {
+          $('#IP-input').val('')
+          $('#Port1-input').val('')
+          $('#Port2-input').val('')
+        }
+
+        function submitJson() {
+
+          $.ajax({
+                url: 'http://127.0.0.1:5000/result',
+                type: 'post',
+                contentType: 'application/json',
+                success: function (data) {
+                    $('#started-task-modal').modal('hide');
+                  $.LoadingOverlay('hide')
+                  $('#finished-task-modal').modal('show')
+                  console.log(data)
+                },
+                data: JSON.stringify(DataArray)
+            });
+
+
+        }
+
+
+        function storeConfig(newJ){
+          console.log(newJ)
+          var cast = newJ;
+          $('#tasks-list').append('<tr class="task">' +
+                                  '<td>'+cast['ip']+'</td>' +
+                                  '<td>'+cast['port1']+'</td>' +
+                                  '<td>'+cast['port2']+'</td>' +
+                                  '<td><button type="button" class="btn btn-outline-danger btn-sm btn-task-delete">Delete</button></td>' +
+                                  '</tr>');
+
+          var toStore = JSON.parse(JSON.stringify(cast))
+          DataArray.push(toStore);
+          console.log(DataArray);
+          clearPage();
+        }
+
+        function newConfig() {
+            var newJson = templateJson;
+            newJson['vlan'] = $('#Vlan-input').val();
+            newJson['vlan_name'] = $('#VlanName-input').val();
+            newJson['vtp'] = $('#Vtp-input').val();
+            newJson['ip'] = $('#IP-input').val();
+            newJson['port1'] = $('#Port1-input').val();
+            newJson['port2'] = $('#Port2-input').val();
+            storeConfig(newJson)
+            }
+
+        function deleteTask(index) {
+            DataArray.splice(index, 1);
+            console.log(DataArray);
+            }
+
+
+        $(document).ready(function() {
+
+
+          $('#button_next').on('click', function() {
+
+            newConfig();
+          });
+
+          $('#button_submit').on('click', function(){
+            submitJson();
+            $('#started-task-modal').modal('show');
+          });
+
+
+          $("#tasks-list").on( 'click','.btn-task-delete', function() {
+              deleteTask($(this).closest('tr').index());
+              $(this).closest('tr').remove();
+          });
+
+          $('#tasks-list').sortable( {
+              start: function(event, ui) {
+                  switchIndex1 = ui.item.index();
+              },
+              update: function( event, ui ) {
+                  switchIndex2 = ui.item.index();
+                  switchTasks(switchIndex1, switchIndex2);
+              }
+          });
+          $('#button-start-ok').on('click', function() {
+            $.LoadingOverlay('show', {
+              image       : "",
+              text        : "The Script Is Running.Please Wait...",
+              fontawesome : "fa fa-cog fa-spin"
+            });
+          });
+
+        });
+
+
+    </script>
+
+
+<style>
+    p.ex1
+    {
+        margin: 50px 50px;
+        font-weight: bold;
+    }
+
+    input[type=text], select, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    resize: vertical;
+}
+label {
+  padding: 20px 10px 10px 0;
+  display: inline-block;
+  font-weight:bold
+}
+.container {
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 50px;
+}
+.col-25 {
+    float: left;
+    width: 15%;
+    margin-top: 6px;
+}
+.col-75 {
+    float: left;
+    width: 75%;
+    margin-top: 6px;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+body {
+    font-size: 20px;
+  }
+
+
+</style>
+<body>
+  <div style="padding:0 16px;">
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">
+                <img alt="logo-topix" style="width:250px;height:120px;margin: 0px 0px" src="/home/hoss/netmiko/python_tests/jinja_temp/static/image/topix.png">
+                <h1  align="left" style="font-size:50px;height:100px;" >
+                    <p class="ex1">New Private Peering Configuration Data</p>
+                </h1>
+            </a>
+        </div>
+    </div>
+</nav>
+</div>
+<div class="container">
+
+<form class="form-horizontal">
+
+    <div class="row">
+      <div class="col-25">
+        <label for="Vlan-input" >Vlan ID </label>
+      </div>
+      <div class="col-75">
+            <input name="switch_info" id="Vlan-input" type="text">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-25">
+        <label for="VlanName-input" >Vlan Name </label>
+      </div>
+      <div class="col-75">
+              <input name="switch_info" id="VlanName-input" type="text">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-25">
+          <label for="Vtp-input" >VTP Server</label>
+      </div>
+      <div class="col-75">
+                <input name="switch_info" id="Vtp-input" type="text">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-25">
+        <label for="IP-input">IP </label>
+      </div>
+      <div class="col-75">
+        <input name="switch_info"id="IP-input" type="text">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-25">
+        <label for="Port1-input">Port1</label>
+      </div>
+      <div class="col-75">
+        <input name="switch_info" id="Port1-input" placeholder="Gix/x/x" type="text">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-25">
+        <label for="Port2-input" >Port2</label>
+      </div>
+      <div class="col-75">
+        <input name="switch_info" id="Port2-input" placeholder="Gix/x/x" type="text">
+      </div>
+    </div>
+
+
+
+<div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+
+        <span class="pull-left">
+          <button id="button_next" name="next" type="button" class="btn btn-success">Next Switch</button>
+          <button type="button" name ="submit" id="button_submit" class="btn btn-success">Submit Data</button>
+        </span>
+    </div>
+</div>
+
+<div class="col-md-7">
+    <table class="table table-dark table-tasks">
+        <thead>
+        <tr>
+            <th scope="col">Device</th>
+            <th scope="col">Port1</th>
+            <th scope="col">Port2</th>
+            <th scope="col">Delete</th>
+
+        </tr>
+        </thead>
+        <tbody id="tasks-list">
+        </tbody>
+    </table>
+</div>
+
+
+</form>
+</div>
+
+<!-- Modal task started -->
+<div class="modal fade" id="started-task-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Task started</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="duplicate-task-message">
+              THE INFORMATION ARE STORED AND THE CONFIGURATION IS GOING TO START
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary" data-dismiss="modal" id="button-start-ok">Ok</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal task finished -->
+<div class="modal fade" id="finished-task-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Task Finished</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="duplicate-task-message">
+              Task has finished running
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary" data-dismiss="modal">Ok</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
