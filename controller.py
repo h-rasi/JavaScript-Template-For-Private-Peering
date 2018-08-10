@@ -10,7 +10,9 @@ errordict={
     '1000' :'No Such Interface in Switch',
     '200' :'Wrong VTP Server Address...IT Is in Client Mode...Please Check Again',
     '151':'Not Such IP Address',
-    '166' :'VTP Server IP Address is not True'
+    '166' :'VTP Server IP Address is not True',
+    '1': 'Authentication Failed,Please Check Authentication information',
+    '0':'Configuration Finished Successfully'
 
 }
 
@@ -18,7 +20,6 @@ def script(json1):
     with open('../out.json','w') as f:
         conf = json.dump(json1,f,indent=2)
     a = call(["python3", "../PrivatePeering.py"])
-    print("return error {}".format(a))
     return a
 
 
@@ -43,7 +44,8 @@ def json_form():
             'message':errordict[str(value)]
             }
         )
-    return 'The New Peering Configured succesfully'
+    else:
+        return 'The New Peering Configured succesfully'
 
 
 if __name__ == '__main__':
